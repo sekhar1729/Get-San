@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GetSAN Utility</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Video Background -->
+    <video autoplay muted loop id="bg-video">
+        <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div class="container">
+        <h2>GetSAN - Extract DNS Names from SSL/TLS Certificates</h2>
+        <input type="text" id="domain" placeholder="Enter domain name">
+        <button onclick="fetchSAN()">Get SANs</button>
+        
+        <div id="result-box">
+            <h3>Extracted DNS Names</h3>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        function fetchSAN() {
+            var domain = document.getElementById("domain").value;
+            fetch('/get_san', {
+                method: "POST",
+                body: new URLSearchParams({ "domain": domain }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                let output = document.getElementById("result");
+                output.innerHTML = "";
+                
+                if (data.san.length === 0) {
+                    output.innerHTML = "<p>No SANs found.</p>";
+                } else {
+                    data.san.forEach(san => {
+                        let p = document.createElement("p");
+                        p.textContent = san;
+                        output.appendChild(p);
+                    });
+                }
+
+                document.getElementById("result-box").style.display = "block";
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>
